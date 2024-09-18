@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: book-catalog
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: book-catalog
+  template:
+    metadata:
+      labels:
+        app: book-catalog
+    spec:
+      containers:
+      - name: book-catalog-container
+        image: book_catalog:latest  # Local Docker image
+        imagePullPolicy: Never      # Use local Docker image
+        ports:
+        - containerPort: 8000       # Port exposed by FastAPI app
+        env:
+        - name: DATABASE_URL        # Pass DATABASE_URL as an environment variable
+          value: "postgresql://book_catalog_db_sit722_part_2_db_user:j0i1YQYQGPqf7tygbu7jl7Dc23Gk2N75@dpg-crlfifjtq21c73eeh8pg-a.oregon-postgres.render.com/book_catalog_db_sit722_part_2_db"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: book-catalog-service
+spec:
+  type: NodePort                    # Expose the service externally
+  selector:
+    app: book-catalog
+  ports:
+    - port: 8000                    # Service internal port
+      targetPort: 8000              # Target container port
+      nodePort: 30007               # NodePort to access app on localhost:30007
